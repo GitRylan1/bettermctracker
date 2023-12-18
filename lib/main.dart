@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final BlockTracker blockTracker = BlockTracker();
+      final BlockTracker blockTracker = BlockTracker();
     return Scaffold(
       appBar: AppBar(
         title: Text('Minecraft Block Tracker'),
