@@ -87,7 +87,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   BlockTracker blockTracker = BlockTracker();
+  String _ImageURL = "https://pbs.twimg.com/media/E2gTS_mX0AUgteM?format=jpg&name=4096x4096";
 
+  //Display Image
+  Widget imageDisplay() {
+    return
+        Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              SizedBox(height: 30,),
+          Image.network (
+          _ImageURL,
+          height: 400,
+          width: 400,
+            ),
+          ],
+        );
+  }
   @override
   Widget build(BuildContext context) {
     print("--- blockTracker.blockCounts = ${blockTracker.blockCounts.length}");
@@ -102,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              imageDisplay(),
               DropdownButton<Block>(
                 value: null,
                 items: blockTracker.availableBlocks.map((Block block) {
