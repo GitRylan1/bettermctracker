@@ -14,7 +14,8 @@ class Block {
 }
 
 class BlockTracker {
-  Map<String, int> blockCounts = {};
+  // Map<String, int> blockCounts = {};
+  Map<String, Block> blockCounts = {};
   List<int> previousBlockCounts = [];
 
   //List<Block> availableBlocks = <Block>[];
@@ -49,12 +50,13 @@ class BlockTracker {
 
   void addBlock(Block block) {
     final blockId = block.id;
-    blockCounts[blockId] = (blockCounts[blockId] ?? 0) + 1;
+    block.count = block.count + 1;
+    blockCounts[blockId] = block;
+    // final blockId = block.id;
+    // blockCounts[blockId] = (blockCounts[blockId] ?? 0) + 1;
   }
 
-  void saveBlockCounts() {
-    previousBlockCounts.add(blockCounts.values.reduce((a, b) => a + b));
-  }
+  void saveBlockCounts() {}
 }
 
 class MyApp extends StatelessWidget {
@@ -66,7 +68,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -84,101 +86,117 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-
-      _counter++;
-    });
-  }
+  BlockTracker blockTracker = BlockTracker();
 
   @override
   Widget build(BuildContext context) {
-      final BlockTracker blockTracker = BlockTracker();
+    print("--- blockTracker.blockCounts = ${blockTracker.blockCounts.length}");
     return Scaffold(
       appBar: AppBar(
         title: Text('Minecraft Block Tracker'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DropdownButton<Block>(
-              value: null,
-              items: blockTracker.availableBlocks.map((Block block) {
-                return DropdownMenuItem<Block>(
-                  value: block,
-                  child: Row(
-                    children: [
-                      Text(block.name),
-                      Text(" --- count: "),
-                      Text(block.count.toString()),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (Block? selectedBlock) {
-                if (selectedBlock != null) {
-                  blockTracker.addBlock(selectedBlock);
+      body:
+      Container(
+        color: Colors.green,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DropdownButton<Block>(
+                value: null,
+                items: blockTracker.availableBlocks.map((Block block) {
+                  return DropdownMenuItem<Block>(
+                    value: block,
+                    child: Row(
+                      children: [
+                        Text(block.name),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (Block? selectedBlock) {
+                  if (selectedBlock != null) {
+                    setState(() {
+                      blockTracker.addBlock(selectedBlock);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${selectedBlock.name} added!'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Current Block Counts:',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  itemCount: blockTracker.blockCounts.length,
+                  itemBuilder: (BuildContext context, int position) {
+                    String key = blockTracker.blockCounts.keys.elementAt(position);
+                    return ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(" Block : ${blockTracker.blockCounts[key]!.name} "),
+                          Text(" Count : ${blockTracker.blockCounts[key]!.count} "),
+                        ],
+                      ),
+                      //title: Text("Test"),
+
+                    );
+                  },
+                ),
+              ),
+
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  blockTracker.saveBlockCounts();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${selectedBlock.name} added!'),
+                      content: Text('Block counts saved!'),
                       duration: Duration(seconds: 1),
                     ),
                   );
-                }
-              },
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Current Block Counts:',
-              style: TextStyle(fontSize: 18),
-            ),
-            for (var entry in blockTracker.blockCounts.entries)
-              Text('${entry.key}: ${entry.value}'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                blockTracker.saveBlockCounts();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Block counts saved!'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
-              child: Text('Save Block Counts'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Previous Block Counts'),
-                      content: Column(
-                        children: [
-                          for (var count in blockTracker.previousBlockCounts)
-                            Text('Count: $count'),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Close'),
+                },
+                child: Text('Save Block Counts'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Previous Block Counts'),
+                        content: Column(
+                          children: [
+                            for (var count in blockTracker.previousBlockCounts)
+                              Text('Count: $count'),
+                          ],
                         ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Text('Show Previous Counts'),
-            ),
-          ],
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Close'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Show Previous Counts'),
+              ),
+            ],
+          ),
         ),
       ),
     );
